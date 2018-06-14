@@ -12,7 +12,7 @@
 	<script type="text/javascript">
 		
 		//The config object is how you configure your Phaser Game. There are lots of options that can be placed in this object and as you expand on your Phaser knowledge you'll encounter more of them
-		var config = {
+		var config 			= {
 			type : Phaser.AUTO,  	// "type" can be either Phase.CANVAS or Phase.WEBGL, Phase.AUTO is recommended
 			width : 800,
 			height : 600,
@@ -32,12 +32,14 @@
 
 		//An instance of a Phaser.Game object
 		//The configuration object is passed to it. This will start the process of bringing Phaser to life.
-		var game = new Phaser.Game( config );
+		var game 			= new Phaser.Game( config );
 
 		var platforms;
 		var player;
 		var cursors;
 		var stars;
+		var score = 0;
+		var scoreText;
 
 		/**
 		 * [preload: This function is used to load the assets for our game]
@@ -56,7 +58,7 @@
 		}
 
 		/**
-		 * [create places assets on the screen]
+		 * [create: places assets on the screen]
 		 * @return {[void]} [Returns void]
 		 */
 		function create(){
@@ -111,6 +113,9 @@
 			//Adds "weight" to the player's body property. The higher the number the heavier the body.
 			player.body.setGravity(300);
 
+
+		// PLAYER ANIMATION
+		
 			//Define an animation selecting the frames from the sprite sheet that reflect walking left
 			this.anims.create({
 				key: "left", //animation name
@@ -149,6 +154,9 @@
 			//Enable the keyboard manager
 			cursors = this.input.keyboard.createCursorKeys();
 
+		// SCORE UI
+			scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+
 		}
 
 		/**
@@ -162,13 +170,11 @@
 				player.setVelocityX( -160 ); //px/sec sq
 				//selected the animation to be played when walking to the left
 				player.anims.play("left", true);
-
 			}else if( cursors.right.isDown ){
 				//apply a velocity on the X axis
 				player. setVelocityX( 160 ); //px/sec sq
 				//selected the animation to be played when walking to the left
 				player.anims.play('right', true)
-
 			}else{
 				//if no keys are pressed, the player stops moving
 				player.setVelocityX(0);
@@ -189,8 +195,10 @@
 		 */
 		function collectStar(player, star){
 			star.disableBody(true, true);
-		}
 
+			score += 10; //add ten points to the score
+			scoreText.setText( 'Score: '+ score );
+		}
 
 	</script>
 </body>
