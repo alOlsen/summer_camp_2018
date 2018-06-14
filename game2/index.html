@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Tutorial</title>
+	<script src="src/phaser.js"></script>
+</head>
+<body>
+	<script type="text/javascript">
+		
+		//The config object is how you configure your Phaser Game. There are lots of options that can be placed in this object and as you expand on your Phaser knowledge you'll encounter more of them
+		var config = {
+			type : Phase.AUTO,  	// "type" can be either Phase.CANVAS or Phase.WEBGL, Phase.AUTO is recommended
+			width : 800,
+			height : 600,
+			scene : {
+				preload : preload,
+				create : create,
+				update : update
+			}
+		};
+
+		//An instance of a Phaser.Game object
+		//The configuration object is passed to it. This will start the process of bringing Phaser to life.
+		var game = new Phaser.Game( config );
+
+		
+		/**
+		 * [preload: This function is used to load the assets for our game]
+		 * @return {[void]} [Returns void]
+		 */
+		function preload(){
+			//The first parameter is a key, and the second is a path to the asset in your project's file system organization
+
+			this.load.image("sky", "assets/sky.png");
+			this.load.image("ground", "assets/platform.png");
+			this.load.image("star", "assets/star.png");
+			this.load.image("bomb", "assets/bomb.png");
+
+			//A spritesheet is typically used to handle animations
+			this.load.spritesheet("dude", "assets/dude.png", { frameWidth: 32, frameHeight: 48 } ); 
+		}
+
+		/**
+		 * [create description]
+		 * @return {[type]} [description]
+		 */
+		function create(){
+			// The first two parameters are the x and y coordinates for the location to place the image
+			this.add.image(400, 300, 'sky'); 
+		}
+
+		function update(){
+
+		}
+
+
+	</script>
+</body>
+</html>
