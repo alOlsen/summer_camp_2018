@@ -1,3 +1,6 @@
+<!--
+	CODE from http://phaser.io/tutorials/making-your-first-phaser-3-game/
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +13,7 @@
 		
 		//The config object is how you configure your Phaser Game. There are lots of options that can be placed in this object and as you expand on your Phaser knowledge you'll encounter more of them
 		var config = {
-			type : Phase.AUTO,  	// "type" can be either Phase.CANVAS or Phase.WEBGL, Phase.AUTO is recommended
+			type : Phaser.AUTO,  	// "type" can be either Phase.CANVAS or Phase.WEBGL, Phase.AUTO is recommended
 			width : 800,
 			height : 600,
 			scene : {
@@ -42,12 +45,15 @@
 		}
 
 		/**
-		 * [create description]
-		 * @return {[type]} [description]
+		 * [create places assets on the screen]
+		 * @return {[void]} [Returns void]
 		 */
 		function create(){
 			// The first two parameters are the x and y coordinates for the location to place the image
+			// All Game Objects are positioned based on their center by default
+			/* The order in which game objects are displayed matches the order in which you create them. So if you wish to place a star sprite above the background, you would need to ensure that it was added as an image second, after the sky image*/
 			this.add.image(400, 300, 'sky'); 
+			this.add.image(400, 300, 'star');
 		}
 
 		function update(){
