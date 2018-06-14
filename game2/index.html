@@ -16,6 +16,13 @@
 			type : Phaser.AUTO,  	// "type" can be either Phase.CANVAS or Phase.WEBGL, Phase.AUTO is recommended
 			width : 800,
 			height : 600,
+			physics : {
+				default : 'arcade',
+				arcade : {
+					gravity : { y : 300 },
+					debug 	: false
+				}
+			},
 			scene : {
 				preload : preload,
 				create : create,
@@ -27,7 +34,7 @@
 		//The configuration object is passed to it. This will start the process of bringing Phaser to life.
 		var game = new Phaser.Game( config );
 
-		
+		var platforms;
 		/**
 		 * [preload: This function is used to load the assets for our game]
 		 * @return {[void]} [Returns void]
@@ -52,8 +59,16 @@
 			// The first two parameters are the x and y coordinates for the location to place the image
 			// All Game Objects are positioned based on their center by default
 			/* The order in which game objects are displayed matches the order in which you create them. So if you wish to place a star sprite above the background, you would need to ensure that it was added as an image second, after the sky image*/
-			this.add.image(400, 300, 'sky'); 
-			this.add.image(400, 300, 'star');
+
+			this.add.image( 400, 300, 'sky');  // This creates a new image Game Object and adds it to the Scene display list
+			
+			platforms = this.physics.add.staticGroup();
+
+			platforms.create( 400, 568, 'ground').setScale(2).refreshBody();
+
+			platforms.create( 600, 400, 'ground');
+			platforms.create(  50, 250, 'ground');
+			platforms.create( 750, 220, 'ground');
 		}
 
 		function update(){
