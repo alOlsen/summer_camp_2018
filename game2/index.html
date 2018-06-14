@@ -35,6 +35,9 @@
 		var game = new Phaser.Game( config );
 
 		var platforms;
+		var player;
+		var cursors;
+
 		/**
 		 * [preload: This function is used to load the assets for our game]
 		 * @return {[void]} [Returns void]
@@ -62,17 +65,85 @@
 
 			this.add.image( 400, 300, 'sky');  // This creates a new image Game Object and adds it to the Scene display list
 			
+			//Add a platforms variable for Physics static objects
 			platforms = this.physics.add.staticGroup();
-
+			//Adds the floor platform, and scales it to be twice the size of the original dimension
+			//We also refresh the Physics world after we scale up to ensure the physics engine is updated with the new size
 			platforms.create( 400, 568, 'ground').setScale(2).refreshBody();
-
+			// Add three more platforms and kept original sizes
 			platforms.create( 600, 400, 'ground');
 			platforms.create(  50, 250, 'ground');
 			platforms.create( 750, 220, 'ground');
+
+			//Adds a player variable for a Physics dynamic object, it adds the sprite
+			player = this.physics.add.sprite(100, 500, 'dude');
+			//Add a slight bounce to the player for when it collides with the floor
+			player.setBounce(0.2);
+			//This ensures that the player stays inside the 800 x 600 game window
+			player.setCollideWorldBounds(true);
+			//Adds "weight" to the player's body property. The higher the number the heavier the body.
+			player.body.setGravity(300);
+
+			//Define an animation selecting the frames from the sprite sheet that reflect walking left
+			this.anims.create({
+				key: "left",
+				frames: this.anims.generateFrameNumbers('dude', {start: 0, end: 3 }), 
+				frameRate: 10,
+				repeat : -1
+			});
+
+			//Define an animation selecting the frames from the sprite sheet that reflect turning around
+			this.anims.create({
+				key : 'turn',
+				frames: [{key: 'dude', frame: 4 }],
+				frameRate : 20
+			});
+
+			//Define an animation selecting the frames from the sprite sheet that reflect walking right
+			this.anims.create({
+				key : 'right',
+				frames : this.anims.generateFrameNumbers("dude", {start: 5, end: 8 }),
+				frameRate : 10,
+				repeat : -1
+			});
+
+			//Add a Collision Object to monitor the player and platform dynamics
+			this.physics.add.collider( player, platforms );
+			//Enable the keyboard manager
+			cursors = this.input.keyboard.createCursorKeys();
+
 		}
 
+		/**
+		 * [update is the main game loop]
+		 * @return {[void]} [Returns void]
+		 */
 		function update(){
+			//detect when the left arrow key is pressed down
+			if( cursors.left.isDown ){	
+				//apply a velocity on the X axis
+				player.setVelocityX( -160 ); //px/sec sq
+				//selected the animation to be played when walking to the left
+				player.anims.play("left", true);
 
+			}else if( cursors.right.isDown ){
+				//apply a velocity on the X axis
+				player. setVelocityX( 160 ); //px/sec sq
+				//selected the animation to be played when walking to the left
+				player.anims.play('right', true)
+
+			}else{
+				//if no keys are pressed, the player stops moving
+				player.setVelocityX(0);
+				//The frame showing the avatar looking at the screen is selected
+				player.anims.play('turn');
+			}
+
+			if( cursors.up.isDown && player.body.touching.down ){
+				//if the player is touching down on the floor and the up arrow is pressed down, we apply a velocity
+				// on the y axis to make it appear 
+				player.setVelocityY(-500); //px/sec sq
+			}
 		}
 
 
