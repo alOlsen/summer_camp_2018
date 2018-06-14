@@ -40,6 +40,7 @@
 		var stars;
 		var score = 0;
 		var scoreText;
+		var bombs;
 
 		/**
 		 * [preload: This function is used to load the assets for our game]
@@ -66,96 +67,104 @@
 			// All Game Objects are positioned based on their center by default
 			/* The order in which game objects are displayed matches the order in which you create them. So if you wish to place a star sprite above the background, you would need to ensure that it was added as an image second, after the sky image*/
 
-		//SKY
+			//SKY
+				
+				this.add.image( 400, 300, 'sky');  // This creates a new image Game Object and adds it to the Scene display list
+				
+
+			// PLATFORMS
+				 
+				//Add a platforms variable for Physics static objects
+				platforms = this.physics.add.staticGroup();
+				//Adds the floor platform, and scales it to be twice the size of the original dimension
+				//We also refresh the Physics world after we scale up to ensure the physics engine is updated with the new size
+				platforms.create( 400, 568, 'ground').setScale(2).refreshBody();
+				// Add three more platforms and kept original sizes
+				platforms.create( 600, 400, 'ground');
+				platforms.create(  50, 250, 'ground');
+				platforms.create( 750, 220, 'ground');
+
+
+			//STARS 
+				
+				//Creating a stars group of 12 Stars, each a physics dynamic object
+				stars = this.physics.add.group({
+					key : 'star', // use this image asset defined in the preload() function
+					repeat: 11, // clone 11 more times
+					setXY: { x: 12, y: 0, stepX: 70 } // stepX is the space between each star on the X axis
+				});
+
+				//This checks every objects in the stars group
+				stars.children.iterate( function( child ){
+					 //Make each object in the stars group to bounce
+					 //pick a number between 0.4 and 0.8 and assign to Y position
+					child.setBounce(Phaser.Math.FloatBetween(0.4, 0.8));
+
+				});
+
+			//BOMBS
 			
-			this.add.image( 400, 300, 'sky');  // This creates a new image Game Object and adds it to the Scene display list
+				bombs = this.physics.add.group();
+
+
+
+			// PLAYER
+				
+				//Adds a player variable for a Physics dynamic object, it adds the sprite
+				player = this.physics.add.sprite(100, 500, 'dude');
+				//Add a slight bounce to the player for when it collides with the floor
+				player.setBounce(0.2);
+				//This ensures that the player stays inside the 800 x 600 game window
+				player.setCollideWorldBounds(true);
+				//Adds "weight" to the player's body property. The higher the number the heavier the body.
+				player.body.setGravity(300);
+
+
+			// PLAYER ANIMATION
 			
+				//Define an animation selecting the frames from the sprite sheet that reflect walking left
+				this.anims.create({
+					key: "left", //animation name
+					frames: this.anims.generateFrameNumbers('dude', {start: 0, end: 3 }), // sprite frame selection
+					frameRate: 10, // speed of animation FPS/ Frames per Second
+					repeat : -1 // tells animation to loop
+				});
 
-		// PLATFORMS
-			 
-			//Add a platforms variable for Physics static objects
-			platforms = this.physics.add.staticGroup();
-			//Adds the floor platform, and scales it to be twice the size of the original dimension
-			//We also refresh the Physics world after we scale up to ensure the physics engine is updated with the new size
-			platforms.create( 400, 568, 'ground').setScale(2).refreshBody();
-			// Add three more platforms and kept original sizes
-			platforms.create( 600, 400, 'ground');
-			platforms.create(  50, 250, 'ground');
-			platforms.create( 750, 220, 'ground');
+				//Define an animation selecting the frames from the sprite sheet that reflect turning around
+				this.anims.create({
+					key : 'turn', //animation name
+					frames: [{key: 'dude', frame: 4 }], // sprite frame selection
+					frameRate : 20 // speed of animation FPS/ Frames per Second
+				});
 
+				//Define an animation selecting the frames from the sprite sheet that reflect walking right
+				this.anims.create({
+					key : 'right',
+					frames : this.anims.generateFrameNumbers("dude", {start: 5, end: 8 }),
+					frameRate : 10,
+					repeat : -1
+				});
 
-		//STARS 
-			
-			//Creating a stars group of 12 Stars, each a physics dynamic object
-			stars = this.physics.add.group({
-				key : 'star', // use this image asset defined in the preload() function
-				repeat: 11, // clone 11 more times
-				setXY: { x: 12, y: 0, stepX: 70 } // stepX is the space between each star on the X axis
-			});
+			// COLLIDERS
+				
+				//Add a Collision Object to monitor the player and platform dynamics
+				this.physics.add.collider( player, platforms );
+				this.physics.add.collider( stars, platforms );
+				this.physics.add.collider( bombs, platforms );
 
-			//This checks every objects in the stars group
-			stars.children.iterate( function( child ){
-				 //Make each object in the stars group to bounce
-				 //pick a number between 0.4 and 0.8 and assign to Y position
-				child.setBounce(Phaser.Math.FloatBetween(0.4, 0.8));
+				//Triggers a function when player overlaps/touches a star
+				this.physics.add.overlap(player, stars, collectStar, null, this);
 
-			});
+				//
+				this.physics.add.collider( player, bombs, hitBomb, null, this );
 
+			// PLAYER EVENTS
+				
+				//Enable the keyboard manager
+				cursors = this.input.keyboard.createCursorKeys();
 
-		// PLAYER
-			
-			//Adds a player variable for a Physics dynamic object, it adds the sprite
-			player = this.physics.add.sprite(100, 500, 'dude');
-			//Add a slight bounce to the player for when it collides with the floor
-			player.setBounce(0.2);
-			//This ensures that the player stays inside the 800 x 600 game window
-			player.setCollideWorldBounds(true);
-			//Adds "weight" to the player's body property. The higher the number the heavier the body.
-			player.body.setGravity(300);
-
-
-		// PLAYER ANIMATION
-		
-			//Define an animation selecting the frames from the sprite sheet that reflect walking left
-			this.anims.create({
-				key: "left", //animation name
-				frames: this.anims.generateFrameNumbers('dude', {start: 0, end: 3 }), // sprite frame selection
-				frameRate: 10, // speed of animation FPS/ Frames per Second
-				repeat : -1 // tells animation to loop
-			});
-
-			//Define an animation selecting the frames from the sprite sheet that reflect turning around
-			this.anims.create({
-				key : 'turn', //animation name
-				frames: [{key: 'dude', frame: 4 }], // sprite frame selection
-				frameRate : 20 // speed of animation FPS/ Frames per Second
-			});
-
-			//Define an animation selecting the frames from the sprite sheet that reflect walking right
-			this.anims.create({
-				key : 'right',
-				frames : this.anims.generateFrameNumbers("dude", {start: 5, end: 8 }),
-				frameRate : 10,
-				repeat : -1
-			});
-
-		// COLLIDERS
-			
-			//Add a Collision Object to monitor the player and platform dynamics
-			this.physics.add.collider( player, platforms );
-			this.physics.add.collider( stars, platforms );
-
-			//Triggers a function when player overlaps/touches a star
-			this.physics.add.overlap(player, stars, collectStar, null, this);
-
-
-		// PLAYER EVENTS
-			
-			//Enable the keyboard manager
-			cursors = this.input.keyboard.createCursorKeys();
-
-		// SCORE UI
-			scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+			// SCORE UI
+				scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
 		}
 
@@ -185,19 +194,58 @@
 			if( cursors.up.isDown && player.body.touching.down ){
 				//if the player is touching down on the floor and the up arrow is pressed down, we apply a velocity
 				// on the y axis to make it appear 
-				player.setVelocityY(-500); //px/sec sq
+				player.setVelocityY( -500 ); //px/sec sq
 			}
 		}
 
 		/**
-		 * [collectStar disables the star image and adds to score]
+		 * [collectStar disables the star image, adds to score and creates a bomb]
 		 * @return {[void]} [Returns void]
 		 */
 		function collectStar(player, star){
-			star.disableBody(true, true);
 
-			score += 10; //add ten points to the score
-			scoreText.setText( 'Score: '+ score );
+			star.disableBody(true, true); //disable the star that the player overlapped with
+
+			score += 10; //update score by adding ten points 
+			scoreText.setText( 'Score: '+ score ); // update the score text object / UI
+
+			//Checks to see if all the stars are completed
+			if( stars.countActive(true)===0){
+
+				// loop through all stars in the starts group
+				stars.children.iterate(function(child){
+					//enables all the stars again and 
+					child.enableBody(true, child.x, 0, true, true);
+				});
+
+				//generate a random x value
+				var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0,400);
+				//create new bomb
+				var bomb = bombs.create(x, 16, 'bomb');
+				//apply bounce effect
+				bomb.setBounce(1);
+				//Ensure the bomb collides with the edges of game world to keep it on camera
+				bomb.setCollideWorldBounds(true);
+				//random velocity between -200, 200)
+				bomb.setVelocity(Phaser.Math.Between(-200,200), 20);
+				//ignore gravity
+				bomb.allowGravity = false;
+			}
+		}
+
+		/**
+		 * [hitBomb sets game over state]
+		 * @return {[void]} [Returns void]
+		 */
+		function hitBomb( player, bomb ){
+			//pause the physics engine
+			this.physics.pause();
+			//Turn the player color to red
+			player.setTint( 0xff0000 );
+			//Turn avatar around to face camera
+			player.anims.play('turn');
+			//Set gameover state to true to indicate that it is game over.
+			gameOver = true;
 		}
 
 	</script>
