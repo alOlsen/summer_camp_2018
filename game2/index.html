@@ -37,6 +37,7 @@
 		var platforms;
 		var player;
 		var cursors;
+		var stars;
 
 		/**
 		 * [preload: This function is used to load the assets for our game]
@@ -63,8 +64,13 @@
 			// All Game Objects are positioned based on their center by default
 			/* The order in which game objects are displayed matches the order in which you create them. So if you wish to place a star sprite above the background, you would need to ensure that it was added as an image second, after the sky image*/
 
+		//SKY
+			
 			this.add.image( 400, 300, 'sky');  // This creates a new image Game Object and adds it to the Scene display list
 			
+
+		// PLATFORMS
+			 
 			//Add a platforms variable for Physics static objects
 			platforms = this.physics.add.staticGroup();
 			//Adds the floor platform, and scales it to be twice the size of the original dimension
@@ -75,6 +81,27 @@
 			platforms.create(  50, 250, 'ground');
 			platforms.create( 750, 220, 'ground');
 
+
+		//STARS 
+			
+			//Creating a stars group of 12 Stars, each a physics dynamic object
+			stars = this.physics.add.group({
+				key : 'star', // use this image asset defined in the preload() function
+				repeat: 11, // clone 11 more times
+				setXY: { x: 12, y: 0, stepX: 70 } // stepX is the space between each star on the X axis
+			});
+
+			//This checks every objects in the stars group
+			stars.children.iterate( function( child ){
+				 //Make each object in the stars group to bounce
+				 //pick a number between 0.4 and 0.8 and assign to Y position
+				child.setBounce(Phaser.Math.FloatBetween(0.4, 0.8));
+
+			});
+
+
+		// PLAYER
+			
 			//Adds a player variable for a Physics dynamic object, it adds the sprite
 			player = this.physics.add.sprite(100, 500, 'dude');
 			//Add a slight bounce to the player for when it collides with the floor
@@ -86,17 +113,17 @@
 
 			//Define an animation selecting the frames from the sprite sheet that reflect walking left
 			this.anims.create({
-				key: "left",
-				frames: this.anims.generateFrameNumbers('dude', {start: 0, end: 3 }), 
-				frameRate: 10,
-				repeat : -1
+				key: "left", //animation name
+				frames: this.anims.generateFrameNumbers('dude', {start: 0, end: 3 }), // sprite frame selection
+				frameRate: 10, // speed of animation FPS/ Frames per Second
+				repeat : -1 // tells animation to loop
 			});
 
 			//Define an animation selecting the frames from the sprite sheet that reflect turning around
 			this.anims.create({
-				key : 'turn',
-				frames: [{key: 'dude', frame: 4 }],
-				frameRate : 20
+				key : 'turn', //animation name
+				frames: [{key: 'dude', frame: 4 }], // sprite frame selection
+				frameRate : 20 // speed of animation FPS/ Frames per Second
 			});
 
 			//Define an animation selecting the frames from the sprite sheet that reflect walking right
@@ -107,8 +134,18 @@
 				repeat : -1
 			});
 
+		// COLLIDERS
+			
 			//Add a Collision Object to monitor the player and platform dynamics
 			this.physics.add.collider( player, platforms );
+			this.physics.add.collider( stars, platforms );
+
+			//Triggers a function when player overlaps/touches a star
+			this.physics.add.overlap(player, stars, collectStar, null, this);
+
+
+		// PLAYER EVENTS
+			
 			//Enable the keyboard manager
 			cursors = this.input.keyboard.createCursorKeys();
 
@@ -144,6 +181,14 @@
 				// on the y axis to make it appear 
 				player.setVelocityY(-500); //px/sec sq
 			}
+		}
+
+		/**
+		 * [collectStar disables the star image and adds to score]
+		 * @return {[void]} [Returns void]
+		 */
+		function collectStar(player, star){
+			star.disableBody(true, true);
 		}
 
 
