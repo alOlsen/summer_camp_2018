@@ -1,3 +1,4 @@
+<!-- Tutorial from https://gamedevacademy.org/how-to-make-a-mario-style-platformer-with-phaser-3/?a=13 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,20 +33,172 @@
 
 		var map;
 		var player;
-		var cursors:
+		var cursors;
 		var groundLayer, coinLayer;
 		var text;
+		var score = 0;
+		var text;
 
+		/**
+		 * [preload: This function is used to load the assets for our game]
+		 * @return {[void]} [Returns void]
+		 */
 		function preload(){
+			//map made with Tiled in JSON format
+			this.load.tilemapTiledJSON('map', 'assets/map.json');
 
+			//title in spritesheet
+			this.load.spritesheet('tiles','assets/tiles.png', {frameWidth: 70, frameHeight: 70});
+
+			//simple coin image
+			this.load.image('coin', 'assets/coinGold.png');
+
+			//player animations
+			this.load.atlas('player', 'assets/player.png', 'assets/player.json');
 		}
 
+		/**
+		 * [create: places assets on the screen]
+		 * @return {[void]} [Returns void]
+		 */
 		function create(){
 
+			//WORLD
+				//load map
+				map = this.make.tilemap({key: 'map'});
+
+				//tiles for the ground layer
+				var groundTiles = map.addTilesetImage('tiles');
+
+				//create the ground layer
+				groundLayer = map.createDynamicLayer('World', groundTiles, 0, 0);
+
+				//The player will collide with this layer
+				groundLayer.setCollisionByExclusion([-1]);
+
+				//set the boundaries of our game world
+				this.physics.world.bounds.width 	= groundLayer.width;
+				this.physics.world.bounds.height 	= groundLayer.height;
+
+
+			//PLAYER
+				
+				player = this.physics.add.sprite(200,200, 'player');
+				player.setBounce(0.2);
+				player.setCollideWorldBounds(true);
+
+				//Add Keyboard Events
+				cursors = this.input.keyboard.createCursorKeys();
+
+
+			//CAMERA
+				
+				//set bounds so the camera won't go outside the game world
+				this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels );
+
+				//make the camera follow the player
+				this.cameras.main.startFollow(player);
+
+				//set background color, so the sky is not black
+				this.cameras.main.setBackgroundColor('#ccccff');
+
+			//ANIMATION
+			
+				this.anims.create({
+					key : "walk",
+					frames: this.anims.generateFrameNames('player', {prefix: 'p1_walk', start: 1, end: 11, zeroPad: 2}),
+					frameRate: 10,
+					repeat: -1 // loop forever
+				});
+
+				this.anims.create({
+					key: 'idle',
+					frames: [{key: 'player', frame: 'p1_stand'}],
+					frameRate : 10
+				})
+
+
+			//PICKUPS
+				//Coin image used as tileset
+				var coinTiles = map.addTilesetImage('coin');
+
+				//add coints as tiles
+				coinLayer = map.createDynamicLayer('Coins', coinTiles, 0, 0);
+
+				coinLayer.setTileIndexCallback(17, collectCoin, this );
+
+			//OBJECT COLLISIONS
+			
+				//Collision between floor and player
+				this.physics.add.collider(groundLayer, player);
+
+				//Collision between coin and player
+				this.physics.add.overlap(player, coinLayer);
+
+			
+			//SCORE UI
+				
+				text = this.add.text(20, 570, '0', {
+					fontSize : '20px',
+					fill: '#ffffff'
+				});
+				text.setScrollFactor(0);
+
 		}
 
+		/**
+		 * [update is the main game loop]
+		 * @return {[void]} [Returns void]
+		 */
 		function update(){
+			//EVENTS / MECHANICS
 			
+				
+				if( cursors.left.isDown ){ // If the left arrow key is pressed down
+					//activate motion
+					player.body.setVelocityX(-200);
+
+					//activate animation
+					player.anims.play('walk', true);
+
+					//flip image horizontally
+					player.flipX = true;
+
+				}else if(cursors.right.isDown){  // If the right arrow key is pressed down
+					//activate motion
+					player.body.setVelocityX(200);
+
+					//activate animation
+					player.anims.play('walk', true);
+
+					//flip image horizontally
+					player.flipX = false;
+
+				}
+
+				if((cursors.space.isDown || cursors.up.isDown) && player.body.onFloor()){
+					
+					player.body.setVelocityY(-500);
+				}
+		}
+
+		/**
+		 * [collectCoin runs when player touches a coin. It removes sprite and adds to score
+		 * @param  {[object]} sprite [Graphic asset]
+		 * @param  {[object]} tile   [specific coin that player collided with]
+		 * @return {[boolean]}       [returns boolean: false]
+		 */
+		function collectCoin( sprite, tile ){
+			//remove tile from screen
+			coinLayer.removeTileAt( tile.x, tile.y );
+
+			//add 1 to the score
+			score++;
+
+			//update Score UI
+			text.setText(score);
+
+			return false;
 		}
 
 	</script>	
